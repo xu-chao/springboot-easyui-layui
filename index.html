@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>方特运维--V10.0</title>
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" type="text/css" href="js/login/H-ui.login.css">
+    <link rel="stylesheet" type="text/css" href="js/login/H-ui.min.css">
+    <!--    	<link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.3.3/themes/default/easyui.css">-->
+    <!--	<link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.3.3/themes/icon.css">-->
+    <link rel="stylesheet" type="text/css" href="js/login/jquery-labelauty.css">
+    <link rel="stylesheet" href="js/layui/css/layui.css">
+    <script type="text/javascript" src="js/layui/layui.js"></script>
+    <style>
+        ul {
+            list-style-type: none;
+        }
+        li {
+            display: inline-block;
+        }
+        li{margin: 6px 0;}
+        input.labelauty + label{font:10px "Microsoft Yahei";}
+    </style>
+    <!-- 百度统计-->
+    <script>
+        var _hmt = _hmt || [];
+        (function () {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?3ad24903c33e3fe31645b2a58f3b6dbf";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+    <!--    <script type="text/javascript" src="js/jquery-easyui-1.3.3/jquery.min.js"></script>-->
+    <!--    <script type="text/javascript" src="js/jquery-easyui-1.3.3/jquery.easyui.min.js"></script>-->
+    <!--    <script type="text/javascript" src="js/jquery-easyui-1.3.3/locale/easyui-lang-zh_CN.js"></script>-->
+</head>
+
+<body>
+<div style="position: absolute;width: 100%;height: 100%;z-index: -1;left: 0;top: 0">
+    <img src="image/login_bg.jpg" width="100%" height="100%" style="left: 0;top: 0;">
+</div>
+<div class="loginBox">
+    <div class="wrap-body" style="display: inline-block; width: 100%;">
+        <form id="fm" action="" class="form form-horizontal">
+            <div class="row c1">
+            </div>
+            <div class="row c1">
+            </div>
+            <div class="row cl">
+                <label class="form-label col-3"><i class="layui-icon" style="font-size: 30px;">&#xe66f;</i> </label>
+                <div class="formControls col-7">
+                    <input id="username" name="username" type="text" placeholder="工号"
+                           class="easyui-validatebox input-text size-L" required="true" style="width: 300px;">
+                </div>
+            </div>
+            <div class="row cl">
+                <label class="form-label col-3"><i class="layui-icon" style="font-size: 30px;">&#xe673;</i> </label>
+                <div class="rightValidate col-8">
+                    <input id="password" name="password" type="password" placeholder="密码"
+                           class="easyui-validatebox input-text size-L" required="true" style="width: 300px;">
+                </div>
+            </div>
+
+            <div class="row cl">
+                <label class="form-label col-3"><i class="layui-icon" style="font-size: 30px;">&#xe672;</i> </label>
+                <div class="rightValidate col-8">
+                    <ul >
+                        <li><input type="radio" name="role" value="looker" data-labelauty="普通用户"></li>
+                        <li><input type="radio" name="role" value="admin" data-labelauty="高级用户" checked=""></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row cl">
+                <label class="form-label col-3"></label>
+                <div class="rightValidate col-8">
+                        <a href="javascript:submitData()" class="layui-btn layui-icon" style="width: 120px">&#xe605;&nbsp;登录</a>
+                    &emsp;&emsp;&emsp;
+                    <a href="javascript:resetValue()" class="layui-btn layui-icon"  style="width: 120px">&#xe669;&nbsp;重置</a>
+                </div>
+            </div>
+        </form>
+    </div>
+    <!--	<div class="easyui-window" title="方特运维&#45;&#45;V10.0"-->
+    <!--		data-options="modal:true,closable:false,collapsible:false,minimizable:false,maximizable:false"-->
+    <!--		style="width: 400px;height: 280px;padding: 10px;">-->
+    <!--		<form id="fm" action="" method="post">-->
+    <!--			<table cellpadding="6px" align="center">-->
+    <!--				<tr align="center">-->
+    <!--					<th colspan="2" style="padding-bottom: 10px"><big>用户登录</big></th>-->
+    <!--				</tr>-->
+    <!--				<tr>-->
+    <!--					<td>用户名：</td>-->
+    <!--					<td>-->
+    <!--						<input type="text" id="username" name="username" class="easyui-validatebox" required="true"-->
+    <!--							style="width: 200px" />-->
+    <!--					</td>-->
+    <!--				</tr>-->
+    <!--				<tr>-->
+    <!--					<td>密码：</td>-->
+    <!--					<td>-->
+    <!--						<input type="password" id="password" name="password" class="easyui-validatebox" required="true"-->
+    <!--							style="width: 200px" />-->
+    <!--					</td>-->
+    <!--				</tr>-->
+    <!--				<tr>-->
+    <!--					<td>角色：</td>-->
+    <!--					<td>-->
+    <!--						<input type="radio" name="role" value="looker">普通用户</input>-->
+    <!--						<input type="radio" name="role" value="admin" checked>高级用户</input>-->
+    <!--					</td>-->
+    <!--				</tr>-->
+    <!--				<tr>-->
+    <!--					<td colspan="2"></td>-->
+    <!--				</tr>-->
+    <!--				<tr>-->
+    <!--					<td></td>-->
+    <!--					<td>-->
+    <!--						<a href="javascript:submitData()" class="easyui-linkbutton" iconCls="icon-submit">登录</a>&nbsp;-->
+    <!--						<a href="javascript:resetValue()" class="easyui-linkbutton" iconCls="icon-reset">重置</a>-->
+    <!--					</td>-->
+    <!--				</tr>-->
+    <!--			</table>-->
+    <!--		</form>-->
+</div>
+<script type="text/javascript" src="js/login/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="js/login/jquery-labelauty.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $(':input').labelauty();
+
+    });
+    layui.use('layer', function(){
+    });
+    function submitData() {
+        var username = $("#username").val();
+        var password = $("#password").val();
+        var role = $("input[type='radio']:checked").val();
+        $.ajax({
+            type: "post",
+            url: 'http://127.0.0.1:8000/chaxunlogin?username=' + username + '&password=' + password + '&role=' + role,
+            dataType: "json",
+            async: false,
+            xhrFields: {
+                withCredentials: true
+            },
+            timeout: 3000,//超时时间设置,单位毫秒
+            success: function (r) {
+                if (r.success && r.cityname && r.deptname) {
+                    // window.location.href = "sql.html?username=" + username + "&role=" + role + "&cityname=" + r.cityname + "&deptname=" + r.deptname;
+                    window.location.href = "sql.html";
+                } else {
+                    layer.msg('未分配用户名、密码不正确或者未分配所属城市、部门！');
+                    // $.messager.alert('登录失败', '用户名密码不正确或者所属城市、部门！');
+                }
+            },
+            error: function (r) {
+                if (r.success == '0') {
+                    layer.msg('对不起，无法连接服务器，请检查您的计算机硬件以及网络连接是否正常！');
+                    // $.messager.alert('对不起，无法连接服务器，请检查您的计算机硬件以及网络连接是否正常！');
+                }
+            },
+            complete: function (XMLHttpRequest, status) { //请求完成后最终执行参数
+                if (status == 'error' || status == 'timeout') {
+                    layer.msg('连接超时或者用户名密码输入错误！');
+                    // $.messager.alert('温馨提示', '超时！');
+                }
+            }
+        });
+    }
+
+    function resetValue() {
+        $("#username").val("");
+        $("#password").val("");
+    }
+</script>
+</body>
+
+</html>

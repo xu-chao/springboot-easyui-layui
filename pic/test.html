@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>HQFT-SQL编辑器</title>
+    <link rel="stylesheet" href="css/codemirror.css" />
+    <link rel="stylesheet" href="css/theme/dracula.css" />
+    <link rel="stylesheet" href="css/show-hint.css" />
+    <link rel="stylesheet" href="js/jquery-easyui/themes/default/easyui.css">
+    <link rel="stylesheet" href="js/layui/css/layui.css">
+    <link rel="stylesheet" href="css/index.css" />
+    <style type="text/css">
+        /* 文本超长class */
+        .textEllipsis {
+            color: red;
+            overflow: hidden;
+            /*不允许滚动条*/
+            white-space: nowrap;
+            /*不允许文本换行*/
+            text-overflow: ellipsis;
+            /*文本超长显示省略号*/
+        }
+
+        /* 鼠标移上,显示全文class */
+        .textEllipsis:hover {
+            height: auto;
+            word-break: break-all;
+            white-space: pre-wrap;
+            text-decoration: none;
+        }
+    </style>
+    <script type="text/javascript">
+        var baseUrl = "";
+    </script>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/jquery-easyui/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="js/jquery-easyui/locale/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript" src="js/editor/codemirror.js"></script>
+    <script type="text/javascript" src="js/editor/sublime.js"></script>
+    <script type="text/javascript" src="js/editor/sql.js"></script>
+    <script type="text/javascript" src="js/editor/sql-hint.js"></script>
+    <script type="text/javascript" src="js/editor/show-hint.js"></script>
+    <script type="text/javascript" src="js/editor/formatting.js"></script>
+    <script type="text/javascript" src="js/editor/sql-formatter.min.js"></script>
+    <script type="text/javascript" src="js/layui/layui.js"></script>
+</head>
+
+<body>
+    <div class="layui-fluid">
+        <div class="layui-row">
+            <div class="card left-card">
+                <div class="tree-div">
+                    <ul id="dstable" fit="true" border="false" data-options="
+                        animate: true,
+                        onContextMenu: function(e,node){
+                        e.preventDefault();
+                        chosed = $(this).tree('getChildren',node.target);
+				        sqlName = node.text;
+				           selfSql = node.sql;
+				        $(this).tree('select',node.target);
+                        $('#mm').menu('show',{
+                           left: e.pageX,
+                           top: e.pageY
+                           });
+                        }
+                    "></ul>
+                </div>
+            </div>
+            <div class="card right-card">
+                <div class="layui-row tools">
+                    <button class="layui-btn layui-btn-primary  layui-btn-xs" id='execute'>
+                        <img src="image/run.png" alt="">执行
+                    </button>
+                    <button class="layui-btn layui-btn-primary  layui-btn-xs" id='stop' onclick="stopLoadData()">
+                        <img id="stopImg" src="image/stop0.png" alt="">停止
+                    </button>
+                    <button class="layui-btn layui-btn-primary  layui-btn-xs" id='format'>
+                        <img src="image/format.png" alt="">美化SQL
+                    </button>
+                    <button class="layui-btn layui-btn-primary  layui-btn-xs" id='delete'>
+                        <img src="image/delete.png" alt="">清空
+                    </button>
+                    <button class="layui-btn layui-btn-primary  layui-btn-xs" id="save">
+                        <img src="image/save.png" alt="">保存
+                    </button>
+                    <button class="layui-btn layui-btn-primary  layui-btn-xs" id='logout'>
+                        <img src="image/logout.png" alt="">退出
+                    </button>
+                    <button class="layui-btn layui-btn-primary  layui-btn-xs tabs-panels-right" id='distribution'>
+                        <img src="image/logout.png" alt="">用户分配
+                    </button>
+                </div>
+                <div class="layui-row sql-div">
+                    <textarea id="code"></textarea>
+                    <!-- 负责拖拽 -->
+                    <div id="handle" style="display: none"></div>
+                </div>
+                <div class="layui-row data-div">
+                    <div class="layui-tab h100" style="display: none" lay-filter="result">
+                        <ul class="layui-tab-title">
+                            <li lay-id="info">信息</li>
+                            <li class="layui-this" lay-id="data">结果
+                                <img id="loading" style="display: none"
+                                    src="js/jquery-easyui/themes/default/images/loading.gif" alt="">
+                            </li>
+                        </ul>
+                        <div class="layui-tab-content h100">
+                            <div class="layui-tab-item data-info h100">
+                                <p id="resultCode"></p>
+                                <p id="resultMsg"></p>
+                                <p id="resultTime"></p>
+                            </div>
+                            <div class="layui-tab-item layui-show data-list h100">
+                                <table id="sqldata"></table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="save_div" style="display: none;">
+        <div class="layui-form">
+            <div class="layui-form-item">
+                <label class="layui-form-label">SQL名称：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="name" placeholder="请输入" autocomplete="off" class="layui-input">
+                </div>
+                <span style="color: red;position: relative;top: 15px;">*</span>
+            </div>
+            <div class="layui-form-item layui-form-text">
+                <label class="layui-form-label">SQL描述：</label>
+                <div class="layui-input-inline">
+                    <textarea name="desc" placeholder="请输入内容" class="layui-textarea"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="mm" class="easyui-menu" style="width:120px;">
+        <div onclick="runFunc()" data-options="iconCls:'icon-add'">运行</div>
+<!--        <div onclick="remove()" data-options="iconCls:'icon-remove'">删除</div>-->
+<!--        <div class="menu-sep"></div>-->
+<!--        <div onclick="expand()">展开</div>-->
+<!--        <div onclick="collapse()">收缩</div>-->
+    </div>
+
+    <div id="win" class="easyui-dialog" data-options="resizable:true" title="提示" style="width: 400px; padding: 10px 20px; height: 410px;"
+        closed="true" buttons="#dlg-buttons">
+        <form id="fm" name="frm" method="post" style="margin-top: 20px; margin-left: 20px;">
+            <div id="dlg-buttons" style="display: block">
+                <a id="confirm" href="javascript:void(0)" class="easyui-linkbutton c6" onclick="submitForm()"
+                    style="width: 90px">提交</a>
+                <a href="javascript:void(0)" class="easyui-linkbutton" onclick="closeWin()" style="width: 90px">取消</a>
+            </div>
+        </form>
+    </div>
+
+<div id="view-member-div" style="padding:1% 5%;display: none">
+    <table clase="layui-table" id="view-member-table"></table>
+</div>
+
+    <div id="view-member-tree" style="padding:1% 5%;display: none">
+        <div id="test12" class="demo-tree-more"></div>
+    </div>
+
+</body>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="distribut">编辑</a>
+</script>
+<script type="text/javascript" src="js/index.js"></script>
+<script type="text/javascript">
+    var chosed;
+    var sqlName;
+    var sqlStr;
+    var selfSql;//个人sql
+
+    // $(function () {
+
+    // })
+
+    function runFunc(type) {
+        if(type==1){
+            if (selfSql !== null && selfSql !== undefined && selfSql !== '') {
+                editor.setValue(selfSql);
+                $('#execute').click();
+            }
+        }
+        //判断为函数
+        if (sqlName.indexOf("ownfunc_") != -1 || sqlName.indexOf("function_") != -1) {
+            for (let key in chosed) {
+                if ((chosed[key].text).indexOf("date") != -1 || (chosed[key].text).indexOf("日期") != -1 || (chosed[key].text).indexOf("时间") != -1) {
+                    $('#fm').append("<tr id='" + key + "'><td align='center'>" + chosed[key].text + "</td><td align='center'>&nbsp;&nbsp;&nbsp;</td><td><input id='" + chosed[key].text + "' name='" + chosed[key].text + "'></td></tr><tr id='" + key + "tr'><td><br/></td><td><br/></td></tr>");
+                    var name = "#" + chosed[key].text;
+                    $(name).datebox({
+                        width:150
+                    })
+                } else if ((chosed[key].text).indexOf("系统") != -1) {
+                    $('#fm').append("<tr id='" + key + "'><td align='center'>" + chosed[key].text + "</td><td align='center'>&nbsp;&nbsp;&nbsp;</td><td><select id='" + chosed[key].text + "'><option value='1'>游乐设施本体</option><option value='2'>影像系统</option><option value='3'>灯光系统</option><option value='4'>音响系统</option><option value='5'>特技系统</option><option value='6'>液压系统</option><option value='7'>电脑及配套</option><option value='8'>运管控</option><option value='9'>辅助</option><option value='10'>软件开发</option><option value='11'>室外设备</option></select></td></tr><tr id='" + key + "tr'><td><br/></td><td><br/> </td></tr>");
+                } else if ((chosed[key].text).indexOf("乐园名称") != -1) {
+                    $('#fm').append("<tr id='" + key + "'><td align='center'>" + chosed[key].text + "</td><td align='center'>&nbsp;&nbsp;&nbsp;</td><td><select id='park'></select></td></tr><tr id='" + key + "tr'><td><br/></td><td><br/></td></tr>");
+                } else if ((chosed[key].text).indexOf("乐园项目") != -1) {
+                    $('#fm').append("<tr id='" + key + "'><td align='center'>" + chosed[key].text + "</td><td align='center'>&nbsp;&nbsp;&nbsp;</td><td><select id='project'></select></td></tr><tr id='" + key + "tr'><td><br/></td><td><br/></td></tr>");
+                } else {
+                    $('#fm').append("<tr id='" + key + "'><td align='center'>" + chosed[key].text + "</td><td align='center'>&nbsp;&nbsp;&nbsp;</td><td><input style='width:150px' id='" + chosed[key].text + "' name='" + chosed[key].text + "'></td></tr><tr id='" + key + "tr'><td><br/></td><td><br/></td></tr>");
+                    var name = "#" + chosed[key].text;
+                    $(name).textbox({
+                    })
+                }
+            }
+
+            $('#备件编码').combobox({
+                url: 'json/beijian.json',
+                valueField: 'id',
+                textField: 'id',
+                editable: false,
+                onSelect: function (rec) {
+                    $('#备件名称').textbox('setValue',rec.text);
+                    $('#备件规格').textbox('setValue',rec.spec);
+                }
+            });
+
+            $('#project').combobox({
+                editable: false,
+            });
+
+            if(cityname == 'sz'){
+                $('#park').combobox(
+                    {
+                        disabled: false,
+                        url: 'json/city.json',
+                        prompt: '请填入乐园名称',
+                        valueField: 'id',
+                        textField: 'name',
+                        panelHeight: 'auto',
+                        panelMaxHeight: 150,
+                        editable: false,
+                        // onLoadSuccess:function(){
+                        //     debugger
+                        //     var data = $('#park').combobox('getData');
+                        //     if (data.length > 0) {
+                        //         $('#park').combobox('select',data[0].name);
+                        //     }
+                        // },
+                        onSelect: function (record) {
+                            var id = record.id;
+                            $('#project').combobox({
+                                disabled: false,
+                                url: 'json/park' + id + '.json',
+                                prompt: '请先填入乐园名称',
+                                valueField: 'id',
+                                textField: 'name',
+                                panelHeight: 'auto',
+                                panelMaxHeight: 150,
+                                editable: false,
+                                onLoadSuccess: function () {
+                                    var val = $(this).combobox("getData");
+                                    for (var item in val[0]) {
+                                        if (item == "id") {
+                                            $(this).combobox("select", val[0][item]);
+                                        }
+                                    }
+                                }
+                            }).combobox("clear");
+                        }
+                    });
+            }else {
+                $('#park').combobox(
+                    {
+                        disabled: false,
+                        url: 'json/city_' + cityname + '.json',
+                        prompt: '请填入乐园名称',
+                        valueField: 'id',
+                        textField: 'name',
+                        panelHeight: 'auto',
+                        panelMaxHeight: 150,
+                        editable: false,
+                        onSelect: function (record) {
+                            var id = record.id;
+                            $('#project').combobox({
+                                disabled: false,
+                                url: 'json/park' + id + '.json',
+                                prompt: '请先填入乐园名称',
+                                valueField: 'id',
+                                textField: 'name',
+                                panelHeight: 'auto',
+                                panelMaxHeight: 150,
+                                editable: false,
+                                onLoadSuccess: function () {
+                                    var val = $(this).combobox("getData");
+                                    for (var item in val[0]) {
+                                        if (item == "id") {
+                                            $(this).combobox("select", val[0][item]);
+                                        }
+                                    }
+                                }
+                            }).combobox("clear");
+                        }
+                    });
+            }
+
+            $('#win').dialog({
+                title: '运行函数',
+                width: 450,
+                height: 340,
+                top: 150,
+                closed: false,//显示对话框
+                cache: false,
+                modal: true,
+                closable: false
+            });
+
+        } else {
+            sqlStr = "select ";
+            for (let key in chosed) {
+                sqlStr += chosed[key].text;
+                sqlStr += ",";
+            }
+            sqlStr = sqlStr.substr(0, sqlStr.length - 1);
+            sqlStr += " from ";
+            sqlStr += sqlName;
+            editor.setValue(sqlStr);
+            $('#execute').click();
+        }
+    }
+    }
+    function remove() {
+        var node = $('#dstable').tree('getSelected');
+        $('#dstable').tree('remove', node.target);
+    }
+
+    function collapse() {
+        var node = $('#dstable').tree('getSelected');
+        $('#dstable').tree('collapse', node.target);
+    }
+
+    function expand() {
+        var node = $('#dstable').tree('getSelected');
+        $('#dstable').tree('expand', node.target);
+    }
+    function distribution(){
+
+    }
+    function submitForm() {
+        sqlStr = "select " + sqlName + "("
+        for (let key in chosed) {
+            var name = "#" + chosed[key].text
+            if(name == '#乐园名称'){
+                sqlStr += "'" + $("#park").combobox('getText') + "',"
+            }else if(name == '#乐园项目'){
+                sqlStr += "'" + $("#project").combobox('getText') + "',"
+            }else{
+                sqlStr += "'" + $(name).val() + "',"
+            }
+        }
+        sqlStr = sqlStr.substr(0, sqlStr.length - 1);
+        sqlStr += ")"
+        editor.setValue(sqlStr);
+        $('#execute').click();
+        closeWin();
+    }
+
+    function closeWin() {
+        javascript: $('#win').dialog('close')
+        var TemO = document.getElementById("fm");
+        for (let key in chosed) {
+            id = '" + key + "tr'
+            var newInput = document.getElementById(key);
+            TemO.removeChild(newInput);
+            key += "tr";
+            var newInputtr = document.getElementById(key);
+            TemO.removeChild(newInputtr);
+        }
+    }
+</script>
+
+</html>
